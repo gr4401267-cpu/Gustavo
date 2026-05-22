@@ -1,344 +1,294 @@
-
+<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Painel Headtrick 100% Full Vermelho</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>GX • Minecraft Content</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
   <style>
-    * { margin:0; padding:0; box-sizing:border-box; }
-    body {
-      font-family: Arial, sans-serif;
-      background: #000000;           /* fundo preto puro */
-      height: 100vh;
-      overflow: hidden;
-      touch-action: none;            /* melhor drag no celular */
+    body { font-family: 'Inter', system-ui, sans-serif; }
+    .title-font { font-family: 'Press Start 2P', system-ui; }
+    
+    .post-card {
+      transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
     }
-
-    /* Ícone flutuante centralizado */
-    #floating-icon {
-      position: fixed;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      width: 70px;
-      height: 70px;
-      background: #FF0000;
-      border-radius: 50%;
-      box-shadow: 0 0 25px rgba(255,0,0,0.7);
-      display: flex;
-      align-items: center;
-      justify-content: center;
+    .post-card:hover {
+      transform: translateY(-12px);
+      box-shadow: 0 25px 50px -12px rgb(0 0 0 / 0.4);
+    }
+    .post-image { aspect-ratio: 16 / 13; object-fit: cover; }
+    .tab-active { 
+      border-bottom: 4px solid #22c55e; 
       color: white;
-      font-size: 40px;
-      font-weight: bold;
-      cursor: pointer;
-      user-select: none;
-      z-index: 9999;
-      transition: all 0.2s;
-    }
-
-    #floating-icon:active {
-      transform: translate(-50%, -50%) scale(0.92);
-    }
-
-    /* Painel principal */
-    #panel {
-      position: absolute;
-      width: 320px;
-      background: rgba(17,17,17,0.90); /* semi-preto com transparência */
-      border: 2px solid #FF0000;
-      border-radius: 12px;
-      color: white;
-      padding: 16px;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.8);
-      z-index: 10000;
-      display: none;               /* começa escondido */
-      user-select: none;
-      touch-action: none;
-    }
-
-    #title-bar {
-      background: #FF0000;
-      padding: 10px;
-      text-align: center;
-      font-size: 17px;
-      font-weight: bold;
-      border-radius: 8px 8px 0 0;
-      cursor: move;
-      margin: -16px -16px 16px -16px;
-    }
-
-    #subtitle {
-      text-align: center;
-      color: #FFCC00;
-      font-size: 14px;
-      margin-bottom: 20px;
-    }
-
-    .option {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      margin: 12px 0;
-      font-size: 16px;
-    }
-
-    .switch {
-      position: relative;
-      display: inline-block;
-      width: 50px;
-      height: 26px;
-    }
-
-    .switch input { opacity: 0; width: 0; height: 0; }
-
-    .slider {
-      position: absolute;
-      cursor: pointer;
-      top: 0; left: 0; right: 0; bottom: 0;
-      background-color: #555;
-      transition: .4s;
-      border-radius: 26px;
-    }
-
-    .slider:before {
-      position: absolute;
-      content: "";
-      height: 20px;
-      width: 20px;
-      left: 3px;
-      bottom: 3px;
-      background-color: white;
-      transition: .4s;
-      border-radius: 50%;
-    }
-
-    input:checked + .slider { background-color: #FF0000; }
-
-    input:checked + .slider:before { transform: translateX(24px); }
-
-    #fov-section { margin-top: 20px; }
-
-    #seekbar-fov {
-      width: 100%;
-      height: 8px;
-      background: #444;
-      border-radius: 4px;
-      outline: none;
-      appearance: none;
-    }
-
-    #seekbar-fov::-webkit-slider-thumb {
-      appearance: none;
-      width: 20px;
-      height: 20px;
-      background: #FF0000;
-      border-radius: 50%;
-      cursor: pointer;
-    }
-
-    #fov-value {
-      text-align: center;
-      color: #FFCC00;
-      font-size: 18px;
-      margin-top: 8px;
-    }
-
-    #close-btn {
-      width: 100%;
-      padding: 12px;
-      background: #FF0000;
-      color: white;
-      border: none;
-      border-radius: 8px;
-      font-size: 16px;
-      margin-top: 20px;
-      cursor: pointer;
-    }
-
-    /* Novo: Círculo vermelho FoV na tela */
-    #fov-circle {
-      position: fixed;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      border: 2px solid #FF0000;
-      border-radius: 50%;
-      pointer-events: none;        /* não interfere em cliques */
-      display: none;
-      z-index: 9998;               /* abaixo do painel e ícone */
-      box-shadow: 0 0 15px rgba(255,0,0,0.5);
+      font-weight: 600;
     }
   </style>
 </head>
-<body>
+<body class="bg-zinc-950 text-white min-h-screen pb-20">
 
-  <!-- Botão central -->
-  <div id="floating-icon">+</div>
-
-  <!-- Painel (visível quando aberto) -->
-  <div id="panel">
-    <div id="title-bar">Painel Headtrick 100% Full Vermelho</div>
-    <div id="subtitle"> @gustavo0526_</div>
-
-    <div class="option">
-      <span>Aim Lock</span>
-      <label class="switch">
-        <input type="checkbox" id="chk-aimlock">
-        <span class="slider"></span>
-      </label>
+  <!-- HEADER -->
+  <header class="bg-black/80 backdrop-blur-xl border-b border-green-500/30 sticky top-0 z-50">
+    <div class="max-w-5xl mx-auto px-4 py-5 flex justify-between items-center">
+      <div class="flex items-center gap-4">
+        <div class="w-12 h-12 bg-gradient-to-br from-green-400 to-emerald-500 rounded-2xl flex items-center justify-center text-4xl shadow-lg">⛏️</div>
+        <div>
+          <h1 class="text-3xl font-bold title-font tracking-wider text-white">GX Studios</h1>
+          <p class="text-emerald-400 text-sm -mt-1">    GX    </p>
+        </div>
+      </div>
+      
+      <div class="flex items-center gap-3">
+        <input type="text" id="admin-code" placeholder="CÓDIGO ADMIN" 
+               class="bg-zinc-900 border border-zinc-700 focus:border-emerald-500 px-5 py-3 rounded-2xl text-sm w-40 placeholder-zinc-500 focus:outline-none">
+        <button onclick="handleCode()" 
+                class="bg-emerald-500 hover:bg-emerald-400 transition-colors text-black font-semibold px-8 py-3 rounded-2xl">
+          ENTRAR
+        </button>
+      </div>
     </div>
 
-    <div class="option">
-      <span>No Recoil</span>
-      <label class="switch">
-        <input type="checkbox" id="chk-norecoil">
-        <span class="slider"></span>
-      </label>
+    <!-- TABS -->
+    <div class="max-w-5xl mx-auto px-4 flex border-t border-zinc-800">
+      <button onclick="switchTab(0)" id="tab-0" class="tab-active flex-1 py-5 text-center text-sm">ADDONS</button>
+      <button onclick="switchTab(1)" id="tab-1" class="flex-1 py-5 text-center text-sm">TEXTURAS</button>
+    </div>
+  </header>
+
+  <div class="max-w-5xl mx-auto px-4 pt-8">
+    <div class="flex justify-between items-center mb-8">
+      <h2 id="section-title" class="text-3xl font-bold flex items-center gap-3">
+        <span class="text-emerald-400">📦</span> Addons
+      </h2>
+      <button id="new-post-btn" onclick="newPost()" 
+              class="hidden items-center gap-3 bg-emerald-500 hover:bg-emerald-400 text-black font-semibold px-8 py-4 rounded-3xl transition-all">
+        <i class="fas fa-plus"></i> NOVO CONTEÚDO
+      </button>
     </div>
 
-    <div class="option">
-      <span>Auxílio de mira</span>
-      <label class="switch">
-        <input type="checkbox" id="chk-auxilio">
-        <span class="slider"></span>
-      </label>
-    </div>
-
-    <div class="option">
-      <span>Desenhar Círculo FoV</span>
-      <label class="switch">
-        <input type="checkbox" id="chk-fovcircle">
-        <span class="slider"></span>
-      </label>
-    </div>
-
-    <div id="fov-section">
-      <div>Regular Aim - FoV</div>
-      <input type="range" min="0" max="100" value="10" id="seekbar-fov">
-      <div id="fov-value">1.0</div>
-    </div>
-
-    <button id="close-btn">Fechar Painel</button>
+    <div id="posts-container" class="grid grid-cols-2 md:grid-cols-3 gap-6"></div>
   </div>
 
-  <!-- Novo: Elemento para o círculo vermelho -->
-  <div id="fov-circle"></div>
+  <!-- Botão Flutuante -->
+  <button id="float-new-btn" onclick="newPost()" 
+          class="hidden fixed bottom-8 right-8 bg-emerald-500 text-black w-16 h-16 rounded-3xl flex items-center justify-center text-4xl shadow-2xl z-50 hover:scale-110 transition">
+    +
+  </button>
+
+  <!-- Error Message -->
+  <div id="error-message" class="hidden fixed bottom-8 left-1/2 -translate-x-1/2 bg-red-600/90 text-white px-10 py-4 rounded-2xl shadow-2xl text-sm font-medium backdrop-blur-md">
+    Código incorreto
+  </div>
+
+  <!-- MODAL -->
+  <div id="post-modal" class="hidden fixed inset-0 bg-black/90 flex items-end justify-center z-[100]">
+    <div class="bg-zinc-900 w-full max-w-lg rounded-t-3xl max-h-[92vh] overflow-auto">
+      <div class="p-8">
+        <div class="flex justify-between mb-8">
+          <h3 id="modal-title" class="text-2xl font-bold text-emerald-400">Novo Conteúdo</h3>
+          <button onclick="closeModal()" class="text-4xl text-zinc-400 hover:text-white">✕</button>
+        </div>
+
+        <form id="post-form" class="space-y-6">
+          <div>
+            <label class="block text-sm mb-2 text-zinc-400">Categoria</label>
+            <select id="category" class="w-full px-5 py-4 bg-zinc-800 border border-zinc-700 rounded-2xl text-white">
+              <option value="addons">Addon</option>
+              <option value="texturas">Textura</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="block text-sm mb-2 text-zinc-400">Capa</label>
+            <div onclick="document.getElementById('image-upload').click()" 
+                 class="border-2 border-dashed border-zinc-700 rounded-3xl p-12 text-center cursor-pointer hover:border-emerald-500 transition">
+              <input type="file" id="image-upload" accept="image/*" class="hidden" onchange="previewImage(event)">
+              <div id="image-preview" class="hidden mb-4">
+                <img id="preview-img" class="mx-auto rounded-2xl max-h-56 shadow-md">
+              </div>
+              <i class="fas fa-cloud-upload-alt text-5xl text-zinc-500 mb-3"></i>
+              <p class="text-zinc-400">Clique ou toque para adicionar imagem</p>
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-sm mb-2 text-zinc-400">Título</label>
+            <input type="text" id="title" required class="w-full px-6 py-4 bg-zinc-800 border border-zinc-700 rounded-2xl focus:border-emerald-500">
+          </div>
+
+          <div>
+            <label class="block text-sm mb-2 text-zinc-400">Descrição</label>
+            <textarea id="description" rows="4" class="w-full px-6 py-4 bg-zinc-800 border border-zinc-700 rounded-3xl focus:border-emerald-500"></textarea>
+          </div>
+
+          <div>
+            <label class="block text-sm mb-2 text-zinc-400">Link de Download</label>
+            <input type="url" id="link" required class="w-full px-6 py-4 bg-zinc-800 border border-zinc-700 rounded-2xl focus:border-emerald-500">
+          </div>
+
+          <div class="flex gap-4 pt-6">
+            <button type="button" onclick="closeModal()" class="flex-1 py-4 border border-zinc-700 rounded-2xl font-medium">Cancelar</button>
+            <button type="submit" id="submit-btn" class="flex-1 py-4 bg-emerald-500 text-black font-bold rounded-2xl">PUBLICAR</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
 
   <script>
-    const icon = document.getElementById('floating-icon');
-    const panel = document.getElementById('panel');
-    const titleBar = document.getElementById('title-bar');
-    const closeBtn = document.getElementById('close-btn');
-    const fovCircle = document.getElementById('fov-circle');
-    const chkFovCircle = document.getElementById('chk-fovcircle');
-    const seekbar = document.getElementById('seekbar-fov');
-    const fovValue = document.getElementById('fov-value');
+    // (O script continua o mesmo do anterior, só com pequenas melhorias visuais)
+    let posts = JSON.parse(localStorage.getItem('moluscoContent')) || [];
+    let isAdmin = false;
+    let editingId = null;
+    let currentTab = 0;
 
-    let isDragging = false;
-    let currentX = 0, currentY = 0, initialX, initialY;
+    const categories = ['addons', 'texturas', 'scripts'];
+    const tabNames = [' Addons', 'Texturas', 'scripts'];
 
-    // Toggle painel com ícone central
-    icon.addEventListener('click', () => {
-      if (panel.style.display === 'block') {
-        panel.style.display = 'none';
-        icon.textContent = '+';
+    function savePosts() { localStorage.setItem('moluscoContent', JSON.stringify(posts)); }
+
+    function copyLink(link) {
+      navigator.clipboard.writeText(link).then(() => alert("✅ Link copiado para a área de transferência"));
+    }
+
+    function deletePost(id) {
+      if (!isAdmin || !confirm("Excluir este conteúdo?")) return;
+      posts = posts.filter(p => p.id !== id);
+      savePosts();
+      renderPosts();
+    }
+
+    function editPost(id) {
+      if (!isAdmin) return;
+      const post = posts.find(p => p.id === id);
+      if (!post) return;
+      editingId = id;
+      document.getElementById('modal-title').textContent = "Editar Conteúdo";
+      document.getElementById('submit-btn').textContent = "SALVAR ALTERAÇÕES";
+      document.getElementById('category').value = post.category;
+      document.getElementById('title').value = post.title;
+      document.getElementById('description').value = post.description;
+      document.getElementById('link').value = post.link;
+      document.getElementById('preview-img').src = post.image;
+      document.getElementById('image-preview').classList.remove('hidden');
+      document.getElementById('post-modal').classList.remove('hidden');
+    }
+
+    function newPost() {
+      if (!isAdmin) return;
+      editingId = null;
+      document.getElementById('modal-title').textContent = "Novo Conteúdo";
+      document.getElementById('submit-btn').textContent = "PUBLICAR";
+      document.getElementById('post-form').reset();
+      document.getElementById('image-preview').classList.add('hidden');
+      document.getElementById('post-modal').classList.remove('hidden');
+    }
+
+    function closeModal() {
+      document.getElementById('post-modal').classList.add('hidden');
+    }
+
+    function previewImage(e) {
+      const reader = new FileReader();
+      reader.onload = ev => {
+        document.getElementById('preview-img').src = ev.target.result;
+        document.getElementById('image-preview').classList.remove('hidden');
+      };
+      reader.readAsDataURL(e.target.files[0]);
+    }
+
+    function switchTab(tab) {
+      currentTab = tab;
+      document.querySelectorAll('[id^="tab-"]').forEach((el, i) => el.classList.toggle('tab-active', i === tab));
+      document.getElementById('section-title').innerHTML = tabNames[tab];
+      renderPosts();
+    }
+
+    function showError() {
+      const error = document.getElementById('error-message');
+      error.classList.remove('hidden');
+      setTimeout(() => error.classList.add('hidden'), 2800);
+    }
+
+    function handleCode() {
+      const code = document.getElementById('admin-code').value.trim().toUpperCase();
+      
+      if (code === "GX") {
+        isAdmin = true;
+        document.getElementById('new-post-btn').classList.remove('hidden');
+        document.getElementById('float-new-btn').classList.remove('hidden');
+        alert("✅ Modo Administrador ativado com sucesso!");
+        renderPosts();
+      } else if (code === "SAIR" && isAdmin) {
+        isAdmin = false;
+        document.getElementById('new-post-btn').classList.add('hidden');
+        document.getElementById('float-new-btn').classList.add('hidden');
+        alert("👋 Você saiu do modo administrador.");
+        renderPosts();
       } else {
-        panel.style.display = 'block';
-        icon.textContent = '×';
-        // Centraliza o painel na primeira vez
-        if (!panel.dataset.positioned) {
-          panel.style.left = (window.innerWidth / 2 - 160) + 'px';
-          panel.style.top = (window.innerHeight / 3) + 'px'; // um pouco acima do centro
-          panel.dataset.positioned = 'true';
-        }
+        showError();
       }
-    });
-
-    // Fechar com botão
-    closeBtn.addEventListener('click', () => {
-      panel.style.display = 'none';
-      icon.textContent = '+';
-    });
-
-    // Drag do painel pela barra de título
-    titleBar.addEventListener('mousedown', startDrag);
-    titleBar.addEventListener('touchstart', startDrag, { passive: false });
-
-    function startDrag(e) {
-      if (e.type === 'touchstart') {
-        initialX = e.touches[0].clientX - currentX;
-        initialY = e.touches[0].clientY - currentY;
-      } else {
-        initialX = e.clientX - currentX;
-        initialY = e.clientY - currentY;
-      }
-      isDragging = true;
-      document.addEventListener('mousemove', drag);
-      document.addEventListener('touchmove', drag, { passive: false });
-      document.addEventListener('mouseup', stopDrag);
-      document.addEventListener('touchend', stopDrag);
+      
+      document.getElementById('admin-code').value = '';
     }
 
-    function drag(e) {
-      if (isDragging) {
-        e.preventDefault();
-        if (e.type === 'touchmove') {
-          currentX = e.touches[0].clientX - initialX;
-          currentY = e.touches[0].clientY - initialY;
-        } else {
-          currentX = e.clientX - initialX;
-          currentY = e.clientY - initialY;
-        }
-        panel.style.left = currentX + 'px';
-        panel.style.top = currentY + 'px';
+    function renderPosts() {
+      const container = document.getElementById('posts-container');
+      container.innerHTML = '';
+
+      const filtered = posts.filter(p => p.category === categories[currentTab]);
+
+      if (filtered.length === 0) {
+        container.innerHTML = `<div class="col-span-3 text-center py-24 text-zinc-400">Nenhum conteúdo publicado nesta categoria ainda.</div>`;
+        return;
       }
-    }
 
-    function stopDrag() {
-      isDragging = false;
-      document.removeEventListener('mousemove', drag);
-      document.removeEventListener('touchmove', drag);
-      document.removeEventListener('mouseup', stopDrag);
-      document.removeEventListener('touchend', stopDrag);
-    }
-
-    // Switches - logs + simulação (adicione lógica real aqui)
-    document.querySelectorAll('input[type="checkbox"]').forEach(chk => {
-      chk.addEventListener('change', (e) => {
-        const label = e.target.closest('.option').querySelector('span').textContent;
-        const status = e.target.checked ? 'ATIVADO' : 'DESATIVADO';
-        console.log(`${label}: ${status}`);
-        // alert(`${label}: ${status}`); // descomente se quiser popup
-
-        // Específico para FoV Circle
-        if (e.target.id === 'chk-fovcircle') {
-          if (e.target.checked) {
-            fovCircle.style.display = 'block';
-            updateFovCircle(); // Atualiza tamanho inicial
-          } else {
-            fovCircle.style.display = 'none';
-          }
-        }
+      filtered.forEach(post => {
+        const html = `
+          <div class="post-card bg-zinc-900 rounded-3xl overflow-hidden border border-zinc-800">
+            ${isAdmin ? `
+            <div class="absolute top-4 right-4 flex gap-2 z-10">
+              <button onclick="editPost(${post.id})" class="bg-blue-600 hover:bg-blue-500 w-9 h-9 rounded-2xl flex items-center justify-center text-lg">✏️</button>
+              <button onclick="deletePost(${post.id})" class="bg-red-600 hover:bg-red-500 w-9 h-9 rounded-2xl flex items-center justify-center text-lg">✕</button>
+            </div>` : ''}
+            
+            <img src="${post.image}" class="post-image w-full">
+            
+            <div class="p-5">
+              <h3 class="font-semibold text-lg mb-2 line-clamp-2">${post.title}</h3>
+              <p class="text-zinc-400 text-sm mb-6 line-clamp-4">${post.description}</p>
+              <a href="${post.link}" target="_blank" class="block w-full text-center bg-emerald-500 hover:bg-emerald-400 text-black font-semibold py-4 rounded-2xl transition">
+                BAIXAR AGORA
+              </a>
+            </div>
+          </div>`;
+        container.innerHTML += html;
       });
-    });
-
-    // Slider FoV
-    seekbar.addEventListener('input', () => {
-      const val = 0.5 + (seekbar.value / 100) * 4.5;
-      fovValue.textContent = val.toFixed(1);
-      console.log(`FoV: ${val.toFixed(1)}`);
-      updateFovCircle(val); // Atualiza o círculo em tempo real
-    });
-
-    // Função para atualizar o tamanho do círculo baseado no FoV
-    function updateFovCircle(val = parseFloat(fovValue.textContent)) {
-      if (chkFovCircle.checked) {
-        const radius = val * 100; // Ajuste o multiplicador pra tamanho real (ex: val * 100 pixels)
-        fovCircle.style.width = `${radius * 2}px`;
-        fovCircle.style.height = `${radius * 2}px`;
-      }
     }
+
+    document.getElementById('post-form').addEventListener('submit', function(e) {
+      e.preventDefault();
+      const category = document.getElementById('category').value;
+      const title = document.getElementById('title').value;
+      const description = document.getElementById('description').value || "Conteúdo de qualidade para Minecraft";
+      const link = document.getElementById('link').value;
+      const image = document.getElementById('preview-img').src || `https://picsum.photos/800/650?random=${Date.now()}`;
+
+      if (editingId) {
+        const post = posts.find(p => p.id === editingId);
+        if (post) Object.assign(post, {category, title, description, link, image: image.startsWith('data:') ? image : post.image});
+      } else {
+        posts.unshift({ id: Date.now(), category, title, description, link, image });
+      }
+
+      savePosts();
+      renderPosts();
+      closeModal();
+      alert(editingId ? "✅ Alterações salvas com sucesso!" : "✅ Conteúdo publicado!");
+    });
+
+    window.onload = () => renderPosts();
   </script>
 </body>
 </html>
+      
